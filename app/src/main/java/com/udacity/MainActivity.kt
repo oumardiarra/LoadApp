@@ -120,10 +120,10 @@ class MainActivity : AppCompatActivity() {
                 Log.e("Test", "Filename " + fileName)
             }
             R.id.radioButtonGlide -> download(URL_GLIDE).apply {
-                fileName = radioGroupChoice.radioButtonLoadApp.text.toString()
+                fileName = radioGroupChoice.radioButtonGlide.text.toString()
             }
             R.id.radioButtonRetrofit -> download(URL_RETROFIT).apply {
-                fileName = radioGroupChoice.radioButtonLoadApp.text.toString()
+                fileName = radioGroupChoice.radioButtonRetrofit.text.toString()
             }
         }
     }

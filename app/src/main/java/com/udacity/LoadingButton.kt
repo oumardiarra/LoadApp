@@ -10,10 +10,11 @@ import android.util.Log
 import android.view.View
 import android.view.animation.LinearInterpolator
 import androidx.core.animation.addListener
+import androidx.core.content.withStyledAttributes
 import kotlin.properties.Delegates
 
 class LoadingButton @JvmOverloads constructor(
-        context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
+    context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
     private var widthSize = 0
     private var heightSize = 0
@@ -22,7 +23,7 @@ class LoadingButton @JvmOverloads constructor(
     private var valueAnimator = ValueAnimator()
     private val pointPosition: PointF = PointF(0.0f, 0.0f)
     private lateinit var textButton: String
-
+    private var txtColor = 0
     private var colorLoading: Int = 0
     private var floatProgress: Float = 0f
     private var buttonState: ButtonState by Delegates.observable<ButtonState>(ButtonState.Completed) { p, old, new ->
@@ -51,8 +52,7 @@ class LoadingButton @JvmOverloads constructor(
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.FILL
         textAlign = Paint.Align.CENTER
-        color = context.getColor(R.color.colorPrimary)
-        textSize = 55.0f
+        textSize = 45.0f
 
         typeface = Typeface.create("", Typeface.BOLD)
 
@@ -61,16 +61,22 @@ class LoadingButton @JvmOverloads constructor(
         color = Color.YELLOW
     }
     private val rect = RectF(
-            740f,
-            50f,
-            810f,
-            110f
+        740f,
+        50f,
+        810f,
+        110f
     )
 
     init {
         textButton = context.getString(R.string.button_text)
         isClickable = true
-        Log.e("Test", "init call")
+        context.withStyledAttributes(
+            attrs,
+            R.styleable.LoadingButton
+        ) {
+            paint.color = getColor(R.styleable.LoadingButton_bgColor, 0)
+            txtColor = getColor(R.styleable.LoadingButton_textColor,0)
+        }
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
@@ -88,21 +94,23 @@ class LoadingButton @JvmOverloads constructor(
         super.onDraw(canvas)
 
         canvas?.drawRect(pointPosition.x, pointPosition.y, width.toFloat(), height.toFloat(), paint)
-        paint.color = Color.WHITE
+        paint.color = txtColor
         canvas?.drawText(textButton, (width / 2).toFloat(), ((height + 20) / 2).toFloat(), paint)
-        if (buttonState == ButtonState.Loading) {
+        if (loading) {
             paint.color = context.getColor(R.color.colorPrimaryDark)
 
             canvas?.drawRect(
-                    0f, 0f,
-                    (width * (floatProgress / 100)).toFloat(), height.toFloat(), paint
+                0f, 0f,
+                (width * (floatProgress / 100)).toFloat(), height.toFloat(), paint
             )
             paint.color = Color.WHITE
-            canvas?.drawText(textButton, (width / 2).toFloat(), ((height + 20) / 2).toFloat(), paint)
+            canvas?.drawText(
+                textButton,
+                (width / 2).toFloat(),
+                ((height + 20) / 2).toFloat(),
+                paint
+            )
             canvas?.drawArc(rect, 0f, (360 * (floatProgress / 100)), true, paintArc)
-            /* text=context.getString(R.string.button_loading)
-             canvas?.drawText(text, (width / 2).toFloat(), ((height + 20) / 2).toFloat(), paint)*/
-        } else if (buttonState == ButtonState.Completed) {
 
         }
 
@@ -149,9 +157,9 @@ class LoadingButton @JvmOverloads constructor(
         val minw: Int = paddingLeft + paddingRight + suggestedMinimumWidth
         val w: Int = resolveSizeAndState(minw, widthMeasureSpec, 1)
         val h: Int = resolveSizeAndState(
-                MeasureSpec.getSize(w),
-                heightMeasureSpec,
-                0
+            MeasureSpec.getSize(w),
+            heightMeasureSpec,
+            0
         )
         widthSize = w
         heightSize = h
